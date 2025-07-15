@@ -92,16 +92,19 @@ jobs:
           echo 'linker = "aarch64-linux-gnu-gcc"' >> ~/.cargo/config
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
-      - name: Rename binary for release
+      - name: Package binary as tar.gz
+        if: startsWith(github.ref, 'refs/tags')
         run: |
           mkdir -p dist
           cp target/${{ matrix.target }}/release/${{ github.event.repository.name }} dist/${{ matrix.bin_name }}
-      - name: Upload binary artifact
+          cd dist
+          tar -czf ${{ matrix.bin_name }}.tar.gz ${{ matrix.bin_name }}
+      - name: Upload tar.gz artifact
         if: startsWith(github.ref, 'refs/tags')
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.target }}-binary
-          path: dist/${{ matrix.bin_name }}
+          name: ${{ matrix.target }}-tarball
+          path: dist/${{ matrix.bin_name }}.tar.gz
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
@@ -133,7 +136,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   homebrew:
     name: Publish to Homebrew
-    needs: build
+    needs:
+      - release
+      - extract-version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -147,7 +152,7 @@ jobs:
           formula_folder: Formula
           install: 'bin.install "openv"'
           test: 'assert_match "--help", shell_output("openv --help")'
-          version: ${{ github.ref_name }}
+          version: ${{ needs.extract-version.outputs.version }}
           target_darwin_arm64: true
           target_linux_amd64: true
           target_linux_arm64: true
