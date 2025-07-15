@@ -1,11 +1,24 @@
 name: CI (Lint, Build, Release)
 on:
   push:
+    tags:
+    - 'v[0-9]+.[0-9]+.[0-9]+'
   pull_request:
 permissions:
   contents: write
 jobs:
+  format:
+    name: Check formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Run rustfmt
+        run: cargo fmt -- --check
   lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,27 +29,58 @@ jobs:
           components: clippy
       - name: Run Clippy
         run: cargo clippy --all-features -- -D warnings
+  test:
+    name: Test suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Run tests
+        run: cargo test --all-features
+        env:
+          RUST_BACKTRACE: 1
+          RUST_LOG: debug
+          RUSTFLAGS: -D warnings
+  extract-version:
+    name: Extract version from tag
+    if: startsWith(github.ref, 'refs/tags')
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.setver.outputs.version }}
+    steps:
+      - name: Extract version from tag
+        id: setver
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
   build:
     name: Build ${{ matrix.target }}
-    needs: lint
+    needs:
+      - format
+      - lint
+      - test
+      - extract-version
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            bin_name: ${{ github.event.repository.name }}
+            bin_name: ${{ github.event.repository.name }}-${{ needs.extract-version.outputs.version }}-linux-amd64
           - os: ubuntu-latest
             target: aarch64-unknown-linux-gnu
-            bin_name: ${{ github.event.repository.name }}
+            bin_name: ${{ github.event.repository.name }}-${{ needs.extract-version.outputs.version }}-linux-arm64
           - os: macos-latest
             target: aarch64-apple-darwin
-            bin_name: ${{ github.event.repository.name }}
+            bin_name: ${{ github.event.repository.name }}-${{ needs.extract-version.outputs.version }}-darwin-arm64
+            # openv-1.2.0-darwin-arm64.tar.gz
+            # openv-1.2.0-linux-amd64.tar.gz
             # - os: windows-latest
             #   target: x86_64-pc-windows-gnu
-            #   bin_name: mytool.exe
+            #   bin_name: ${{ github.event.repository.name }}.exe
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Install Rust target
         run: rustup target add ${{ matrix.target }}
       - name: Install cross toolchain (Linux only)
@@ -48,16 +92,20 @@ jobs:
           echo 'linker = "aarch64-linux-gnu-gcc"' >> ~/.cargo/config
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
+      - name: Rename binary for release
+        run: |
+          mkdir -p dist
+          cp target/${{ matrix.target }}/release/${{ github.event.repository.name }} dist/${{ matrix.bin_name }}
       - name: Upload binary artifact
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags')
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-binary
-          path: target/${{ matrix.target }}/release/${{ matrix.bin_name }}
+          path: dist/${{ matrix.bin_name }}
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags')
     needs: build
     steps:
       - name: Download all artifacts
@@ -76,9 +124,32 @@ jobs:
 
             Includes binaries for:
             - Linux (x86_64)
+            - Linux (aarch64)
             - macOS (Apple Silicon)
           # - Windows (x86_64) [Temporarily disabled]
           files: |
-            artifacts/**/${{ github.event.repository.name }}
+            artifacts/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  homebrew:
+    name: Publish to Homebrew
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Release project to Homebrew tap
+        uses: Justintime50/homebrew-releaser@v2
+        with:
+          homebrew_owner: andrea11
+          homebrew_tap: homebrew-formulas
+          github_token: ${{ secrets.HOMEBREW_PUBLISHER_TOKEN }}
+          formula_folder: Formula
+          install: 'bin.install "openv"'
+          test: 'assert_match "--help", shell_output("openv --help")'
+          version: ${{ github.ref_name }}
+          target_darwin_arm64: true
+          target_linux_amd64: true
+          target_linux_arm64: true
+          update_readme_table: false
+          skip_commit: false
