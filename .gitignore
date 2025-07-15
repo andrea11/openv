@@ -1,0 +1,10 @@
+#
+# ░█▀▀░█░░░█▀█░█▀▄░█▀█░█░░
+# ░█░█░█░░░█░█░█▀▄░█▀█░█░░
+# ░▀▀▀░▀▀▀░▀▀▀░▀▀░░▀░▀░▀▀▀
+#
+# Compiled Rust files
+target/*
+
+# Precommit hooks
+.pre-commit-config.yaml
