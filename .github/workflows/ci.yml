@@ -138,9 +138,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   homebrew:
     name: Publish to Homebrew
-    needs:
-      - release
-      - extract-version
+    needs: release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -154,9 +152,10 @@ jobs:
           formula_folder: Formula
           install: 'bin.install "openv"'
           test: 'assert_match "--help", shell_output("openv --help")'
-          version: ${{ needs.extract-version.outputs.version }}
+          version: ${{ github.ref_name }}
           target_darwin_arm64: true
           target_linux_amd64: true
           target_linux_arm64: true
           update_readme_table: false
           skip_commit: false
+          debug: true
