@@ -13,7 +13,7 @@ fn main() {
 
     match args.get(1).map(|s| s.as_str()) {
         Some("wrap") => {
-            info!("Command: wrap");
+            debug!("Command: wrap");
             debug!("Arguments: {:?}", &args[2..]);
             let input = args
                 .iter()
@@ -25,8 +25,23 @@ fn main() {
             println!("{wrapped}");
         }
         Some("hook") if args.len() > 2 => {
-            info!("Command: hook");
+            debug!("Command: hook");
+            debug!("Arguments: {:?}", &args[2..]);
             hooks::print_hook(&args[2]);
+        }
+        Some("init") if args.len() > 1 => {
+            debug!("Command: init");
+            debug!("Arguments: {:?}", &args[2..]);
+            match hooks::setup_hook(Some(&args[2])) {
+                Ok(_) => {
+                    info!("Hook setup successfully");
+                    std::process::exit(0);
+                }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    std::process::exit(1);
+                }
+            }
         }
         _ => {
             error!("Invalid command");

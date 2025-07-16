@@ -48,20 +48,17 @@ To use Openv, you need to set up the appropriate hooks for your shell. Here are 
 
 1. **Bash**:
    ```sh
-   echo 'eval "$(openv init bash)"' >> ~/.bashrc
-   source ~/.bashrc
+   openv init bash
    ```
 
 2. **Zsh**:
    ```sh
-   echo 'eval "$(openv init zsh)"' >> ~/.zshrc
-   source ~/.zshrc
+   openv init zsh
    ```
 
 3. **Fish**:
    ```sh
-   echo 'eval (openv init fish)' >> ~/.config/fish/config.fish
-   source ~/.config/fish/config.fish
+   openv init fish
    ```
 
 ## Configuration

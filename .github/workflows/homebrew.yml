@@ -1,25 +1,28 @@
 name: Homebrew
 on:
   release:
-    types: [published]
+    types:
+      - published
+      - edited
+      - released
 jobs:
   homebrew:
-      name: Publish to Homebrew
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
-        - name: Release project to Homebrew tap
-          uses: Justintime50/homebrew-releaser@v2
-          with:
-            homebrew_owner: andrea11
-            homebrew_tap: homebrew-formulas
-            github_token: ${{ secrets.HOMEBREW_PUBLISHER_TOKEN }}
-            formula_folder: Formula
-            install: 'bin.install "openv"'
-            test: 'assert_match "--help", shell_output("openv --help")'
-            version: ${{ github.ref_name }}
-            target_darwin_arm64: true
-            target_linux_amd64: true
-            target_linux_arm64: true
-            update_readme_table: false
+    name: Publish to Homebrew
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Release project to Homebrew tap
+        uses: Justintime50/homebrew-releaser@v2
+        with:
+          homebrew_owner: andrea11
+          homebrew_tap: homebrew-formulas
+          github_token: ${{ secrets.HOMEBREW_PUBLISHER_TOKEN }}
+          formula_folder: Formula
+          install: 'bin.install "openv"'
+          test: 'assert_match "--help", shell_output("openv --help")'
+          version: ${{ github.ref_name }}
+          target_darwin_arm64: true
+          target_linux_amd64: true
+          target_linux_arm64: true
+          update_readme_table: false

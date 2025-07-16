@@ -1,5 +1,5 @@
 pub const FISH_HOOK: &str = r#"
-function fish_preexec --on-event fish_preexec
+function _openv_hook --on-event fish_preexec
     if string match -q '*openv wrap*' -- "$argv[1]"
         return
     end
