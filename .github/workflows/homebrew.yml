@@ -3,8 +3,6 @@ on:
   release:
     types:
       - published
-      - edited
-      - released
 jobs:
   homebrew:
     name: Publish to Homebrew
