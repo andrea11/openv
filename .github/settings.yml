@@ -18,7 +18,7 @@ repository:
   # A URL with more information about the repository
   homepage: "https://techtonic.ltd"
   # A comma-separated list of topics to set on the repository
-  topics: "secrets,security.env,rust"
+  topics: 1password, secrets, security
   # Either `true` to make the repository private, or `false` to make it public.
   private: false
   # Either `true` to enable issues for this repository, `false` to disable them.
