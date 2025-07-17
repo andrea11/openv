@@ -2,41 +2,40 @@ use crate::config::Config;
 use log::{debug, info, warn};
 use std::{env, fs, path::PathBuf};
 
-pub fn wrap_command(original: &str) -> String {
-    let args: Vec<&str> = original.split_whitespace().collect();
-    if args.is_empty() {
+pub fn wrap_command(original_command: &str) -> String {
+    let trimmed_original = original_command.trim();
+    if trimmed_original.is_empty() {
         warn!("No command provided");
         return String::new();
     }
 
-    let global_config = Config::load(&dirs::home_dir().unwrap().join(".openv/.openv.toml"));
-    let local_config = Config::load(&env::current_dir().unwrap().join(".openv.toml"));
+    let optional_env_file = find_valid_env_file();
+
+    if optional_env_file.is_none() {
+        warn!("No valid .env file found");
+        return original_command.to_string();
+    }
+
+    let env_file = optional_env_file.unwrap();
+    let global_config = Config::load(&dirs::home_dir().unwrap().join(".openv.toml"));
+    let local_config = Config::load(&env_file.parent().unwrap().join(".openv.toml"));
     let config = Config::merge(&global_config, &local_config);
 
-    let command = args.join(" ");
+    if !config.needs_wrapping(original_command) {
+        warn!("Command '{original_command}' is not allowed");
+        return original_command.to_string();
+    }
+    let mut full_cmd = format!(
+        "op run --env-file=\"{}\" -- {original_command}",
+        env_file.display()
+    );
 
-    if !config.needs_wrapping(&command) {
-        warn!("Command '{command}' is not allowed");
-        return command;
+    if config.disable_masking.unwrap_or(false) {
+        full_cmd.push_str(" --no-masking");
     }
 
-    if let Some(env_file) = find_valid_env_file() {
-        let mut full_cmd = format!(
-            "op run --env-file=\"{}\" -- {}",
-            env_file.display(),
-            original
-        );
-
-        if config.disable_masking.unwrap_or(false) {
-            full_cmd.push_str(" --no-masking");
-        }
-
-        info!("Wrapped command: {full_cmd}");
-        return format!("{full_cmd}\n");
-    }
-
-    warn!("No valid .env file found");
-    String::new()
+    info!("Wrapped command: {full_cmd}");
+    format!("{full_cmd}\n")
 }
 
 fn find_valid_env_file() -> Option<PathBuf> {

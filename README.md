@@ -1,6 +1,9 @@
 # Openv
 
-Openv is a tool designed to manage and wrap shell commands, providing additional functionality and security features. It supports multiple shells and allows for customizable command allow/deny lists.
+Openv is a tool designed to manage **.env** files, providing additional security features. It uses 1password CLI under the hood, to automatically replace environment variables with secure credentials.
+
+It supports multiple shells and allows for customizable command allow/deny lists. This tool uses 1password for secure credential management.
+
 
 ## Table of Contents
 
@@ -8,7 +11,12 @@ Openv is a tool designed to manage and wrap shell commands, providing additional
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
   - [Installation](#installation)
+    - [Homebrew (recommended)](#homebrew-recommended)
+    - [Manual Installation](#manual-installation)
+    - [1Password CLI](#1password-cli)
   - [Usage](#usage)
+    - [Automatic Hook Setup (recommended)](#automatic-hook-setup-recommended)
+    - [Manual Hook Setup](#manual-hook-setup)
   - [Configuration](#configuration)
     - [Configuration Options](#configuration-options)
   - [Supported Shells](#supported-shells)
@@ -17,67 +25,77 @@ Openv is a tool designed to manage and wrap shell commands, providing additional
 
 ## Features
 
-- **Command Wrapping**: Wrap shell commands to add additional functionality.
-- **Allow/Deny Lists**: Customize which commands are allowed or denied.
+- **Command Wrapping**: Wrap shell commands to replace environment variables with secure credentials.
 - **Shell Support**: Supports multiple shells including Bash, Zsh, Fish.
-- **Configurable**: Easily configure allow/deny lists and other settings via a TOML configuration file.
+- **Configurable**: Easily configure via a TOML configuration file.
 
 ## Installation
 
-To install Openv, follow these steps:
+### Homebrew (recommended)
 
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/yourusername/openv.git
-   cd openv
-   ```
+To install Openv using Homebrew, you first need to tap the repository:
+`brew tap andrea11/homebrew-formulas`
 
-2. Build the project:
-   ```sh
-   cargo build --release
-   ```
+Then, install Openv:
+`brew install openv`
 
-3. Install the binary:
-   ```sh
-   cargo install --path .
-   ```
+### Manual Installation
+
+To install Openv manually, you can download the binary from the [releases page](https://github.com/andrea11/openv/releases) and place it in a folder included in your PATH (e.g., `/usr/local/bin`).
+
+### 1Password CLI
+
+Openv uses the 1Password CLI to fetch secrets. Make sure you have the 1Password CLI installed and configured properly. You can find the installation instructions [here](https://developer.1password.com/docs/cli/get-started).
+
+It is also recommended to setup the 1Password desktop app enabling the '*Integrate with 1Password CLI*' option.
+Otherwise, you will need to provide the 1Password CLI with a service account token.
+
+<details>
+  <summary>1Password Settings Screenshoot</summary>
+
+  ![1Password setting](doc/1Password%20settings.jpg)
+
+</details>
 
 ## Usage
 
+### Automatic Hook Setup (recommended)
+
 To use Openv, you need to set up the appropriate hooks for your shell. Here are the steps:
 
+1. **Bash**: `openv init bash`
+
+2. **Zsh**: `openv init zsh`
+
+3. **Fish**: `openv init fish`
+
+### Manual Hook Setup
+
+If you prefer to set up the hooks manually, edit your shell configuration file (e.g., `.bashrc`, `.zshrc`, or `config.fish`), adding the following line:
+
 1. **Bash**:
-   ```sh
-   openv init bash
-   ```
+`eval $(openv hook bash)`
 
 2. **Zsh**:
-   ```sh
-   openv init zsh
-   ```
+`eval $(openv hook zsh)`
 
 3. **Fish**:
-   ```sh
-   openv init fish
-   ```
+`eval $(openv hook fish)`
 
 ## Configuration
 
-Openv uses a TOML configuration file to manage allow/deny lists and other settings. The configuration file is located at `~/.config/openv/config.toml`.
+Openv supports some commands out-of-the-box, for which it will automatically invoke the **op** CLI. But you can customize its behavior using a configuration file.
+Openv uses a TOML configuration file to manage all settings. The configuration file can be located at `~/.openv.toml`, for a global configuration, or at the root of your project (`.openv.toml`), for a local configuration.
 
-Example `config.toml`:
+Example `.openv.toml`:
 ```toml
 allowList = [
-    "npm",
-    "pnpm",
-    "yarn",
-    "cargo",
-    "go",
+    "^(npm|pnpm) (run )?(start|dev|build)",
+    "cargo run"
 ]
 
 denyList = [
-    "rm -rf /",
-    "sudo rm -rf /",
+   "^python"
 ]
 
 disable_masking = false
@@ -85,9 +103,9 @@ disable_masking = false
 
 ### Configuration Options
 
-- **allowList**: A list of commands that are allowed.
-- **denyList**: A list of commands that are denied.
-- **disable_masking**: A boolean to disable terminal output masking (default is `false`).
+- **allowList**: A list of Regex patterns for shell commands that are allowed.
+- **denyList**: A list of Regex patterns for shell commands that are denied.
+- **disable_masking**: A boolean to disable terminal output secrets masking (default is `false`).
 
 ## Supported Shells
 
@@ -99,14 +117,7 @@ Openv supports the following shells:
 
 ## Contributing
 
-Contributions are welcome! Please follow these steps to contribute:
-
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature-branch`).
-3. Make your changes.
-4. Commit your changes (`git commit -am 'Add new feature'`).
-5. Push to the branch (`git push origin feature-branch`).
-6. Create a new Pull Request.
+Contributions are welcome! Please open an issue or submit a pull request.
 
 ## License
 

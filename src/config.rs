@@ -19,7 +19,6 @@ static DEFAULT_ALLOW_LIST: LazyLock<Vec<Regex>> = LazyLock::new(|| {
         Regex::new(r"^yarn (run )?(start|dev|build)").unwrap(),
         Regex::new(r"^pnpm (run )?(start|dev|build)").unwrap(),
         Regex::new(r"^bun (run )?(start|dev|build)").unwrap(),
-        Regex::new(r"^printenv$").unwrap(),
     ]
 });
 

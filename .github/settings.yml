@@ -1,6 +1,5 @@
 # Collaborators: give specific users access to this repository.
 # See https://docs.github.com/en/rest/reference/repos#add-a-repository-collaborator for available options
-
 collaborators:
 # Note: `permission` is only valid on organization-owned repositories.
 # The permission to grant the collaborator. Can be one of:
@@ -15,7 +14,7 @@ repository:
   # The name of the repository. Changing this will rename the repository
   name: openv
   # A short description of the repository that will show up on GitHub
-  description: openv a tool to automatically load secrets from .env files
+  description: openv a tool to automatically load secrets from .env files using 1password CLI under the hood
   # A URL with more information about the repository
   homepage: "https://techtonic.ltd"
   # A comma-separated list of topics to set on the repository
