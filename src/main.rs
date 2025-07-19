@@ -21,8 +21,8 @@ fn main() {
                 .map(|s| s.as_str())
                 .collect::<Vec<_>>()
                 .join(" ");
-            let wrapped = logic::wrap_command(&input);
-            println!("{wrapped}");
+            let wrapped_command = logic::wrap_command(&input);
+            println!("{wrapped_command}");
         }
         Some("hook") if args.len() > 2 => {
             debug!("Command: hook");
