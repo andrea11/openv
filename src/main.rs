@@ -1,28 +1,74 @@
 mod config;
-mod doc;
 mod hooks;
 mod logic;
 
-use log::{debug, error, info};
-use std::{env, process};
+use clap::{Parser, Subcommand};
+use log::{info, trace};
+use std::process;
+
+#[derive(Parser)]
+#[command(about, author, version)]
+struct Cli {
+    #[arg(short, long, action = clap::ArgAction::Count, value_parser = clap::value_parser!(u8).range(0..4))]
+    verbose: u8,
+
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Execute a command wrapped with op CLI
+    Execute {
+        /// The command to execute
+        #[arg(required = true, num_args = 1..)]
+        cmd: Vec<String>,
+    },
+    /// Check if a command needs to be wrapped with op CLI
+    Check {
+        /// The command to check
+        #[arg(required = true, num_args = 1..)]
+        cmd: Vec<String>,
+    },
+    /// Print the hook for a given shell
+    Hook {
+        /// The shell to print the hook for
+        #[arg(required = true, value_enum)]
+        shell: hooks::Shell,
+    },
+    /// Setup the hook for a given shell
+    Init {
+        /// The shell to setup the hook for
+        #[arg(required = true, value_enum)]
+        shell: hooks::Shell,
+    },
+}
 
 fn main() {
-    env_logger::init();
+    let cli = Cli::parse();
 
-    let args: Vec<String> = env::args().collect();
+    let mut log_builder: env_logger::Builder =
+        env_logger::Builder::from_env(env_logger::Env::default());
 
-    match args.get(1).map(|s| s.as_str()) {
-        Some("execute") => {
-            debug!("Command: execute");
-            debug!("Arguments: {:?}", &args[2..]);
-            let input = args[2..].join(" ");
-            logic::execute_command(&input);
+    if cli.verbose > 0 {
+        let level = match cli.verbose {
+            1 => log::LevelFilter::Info,
+            2 => log::LevelFilter::Debug,
+            _ => log::LevelFilter::Trace,
+        };
+        log_builder.filter_level(level);
+    }
+
+    log_builder.init();
+
+    match &cli.command {
+        Commands::Execute { cmd: input } => {
+            trace!("Command: execute, Arguments: {input:?}");
+            logic::execute_command(&input.join(" "));
         }
-        Some("check") => {
-            debug!("Command: check");
-            debug!("Arguments: {:?}", &args[2..]);
-            let input = args[2..].join(" ");
-            if logic::needs_wrapping(&input) {
+        Commands::Check { cmd: input } => {
+            trace!("Command: check, Arguments: {input:?}");
+            if logic::needs_wrapping(&input.join(" ")) {
                 println!("true");
                 process::exit(0);
             } else {
@@ -30,15 +76,13 @@ fn main() {
                 process::exit(1);
             }
         }
-        Some("hook") if args.len() > 2 => {
-            debug!("Command: hook");
-            debug!("Arguments: {:?}", &args[2..]);
-            hooks::print_hook(&args[2]);
+        Commands::Hook { shell } => {
+            trace!("Command: hook, Arguments: {shell:?}");
+            hooks::print_hook(shell);
         }
-        Some("init") if args.len() > 1 => {
-            debug!("Command: init");
-            debug!("Arguments: {:?}", &args[2..]);
-            match hooks::setup_hook(Some(&args[2])) {
+        Commands::Init { shell } => {
+            trace!("Command: init, Arguments: {shell:?}");
+            match hooks::setup_hook(Some(shell)) {
                 Ok(_) => {
                     info!("Hook setup successfully");
                     std::process::exit(0);
@@ -48,10 +92,6 @@ fn main() {
                     std::process::exit(1);
                 }
             }
-        }
-        _ => {
-            error!("Invalid command");
-            doc::print_usage();
         }
     }
 }

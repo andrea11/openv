@@ -11,24 +11,32 @@ use std::fs::{read_to_string, OpenOptions};
 use std::io::Write;
 use std::path::PathBuf;
 
-pub fn print_hook(shell: &str) {
+use clap::ValueEnum;
+use strum_macros::Display;
+
+#[derive(Copy, Clone, Display, Debug, ValueEnum)]
+#[strum(serialize_all = "lowercase")]
+pub enum Shell {
+    Bash,
+    Zsh,
+    Fish,
+}
+
+pub fn print_hook(shell: &Shell) {
     match shell {
-        "bash" => {
+        Shell::Bash => {
             println!("{BASH_HOOK}");
         }
-        "zsh" => {
+        Shell::Zsh => {
             println!("{ZSH_HOOK}");
         }
-        "fish" => {
+        Shell::Fish => {
             println!("{FISH_HOOK}");
-        }
-        _ => {
-            eprintln!("Unsupported shell: {shell}");
         }
     }
 }
 
-pub fn setup_hook(shell: Option<&str>) -> Result<(), String> {
+pub fn setup_hook(shell: Option<&Shell>) -> Result<(), String> {
     let shell = match shell {
         Some(s) => s.to_string(),
         _ => env::var("SHELL")
