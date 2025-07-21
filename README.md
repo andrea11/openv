@@ -17,6 +17,7 @@ It supports multiple shells and allows for customizable command allow/deny lists
   - [Usage](#usage)
     - [Automatic Hook Setup (recommended)](#automatic-hook-setup-recommended)
     - [Manual Hook Setup](#manual-hook-setup)
+  - [Commands](#commands)
   - [Configuration](#configuration)
     - [Configuration Options](#configuration-options)
   - [Supported Shells](#supported-shells)
@@ -80,7 +81,14 @@ If you prefer to set up the hooks manually, edit your shell configuration file (
 `eval $(openv hook zsh)`
 
 3. **Fish**:
-`eval $(openv hook fish)`
+`openv hook fish | source`
+
+## Commands
+
+- **execute**: Execute a command wrapped with `op run`.
+- **check**: Check if a command needs to be wrapped.
+- **hook**: Print the shell hook for the specified shell.
+- **init**: Set up the shell hook for the specified shell.
 
 ## Configuration
 

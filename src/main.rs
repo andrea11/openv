@@ -4,7 +4,7 @@ mod hooks;
 mod logic;
 
 use log::{debug, error, info};
-use std::env;
+use std::{env, process};
 
 fn main() {
     env_logger::init();
@@ -12,17 +12,23 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     match args.get(1).map(|s| s.as_str()) {
-        Some("wrap") => {
-            debug!("Command: wrap");
+        Some("execute") => {
+            debug!("Command: execute");
             debug!("Arguments: {:?}", &args[2..]);
-            let input = args
-                .iter()
-                .skip(2)
-                .map(|s| s.as_str())
-                .collect::<Vec<_>>()
-                .join(" ");
-            let wrapped_command = logic::wrap_command(&input);
-            println!("{wrapped_command}");
+            let input = args[2..].join(" ");
+            logic::execute_command(&input);
+        }
+        Some("check") => {
+            debug!("Command: check");
+            debug!("Arguments: {:?}", &args[2..]);
+            let input = args[2..].join(" ");
+            if logic::needs_wrapping(&input) {
+                println!("true");
+                process::exit(0);
+            } else {
+                println!("false");
+                process::exit(1);
+            }
         }
         Some("hook") if args.len() > 2 => {
             debug!("Command: hook");

@@ -1,17 +1,18 @@
 pub const FISH_HOOK: &str = r#"
-function _openv_hook --on-event fish_preexec
-    if string match -q '*openv wrap*' -- "$argv[1]"
-        return
-    end
+function _openv_hook
+    set cmdline (commandline)
 
-    set wrapped (openv wrap "$argv[1]")
-
-    # Only run wrapped if it differs from the original
-    if test -n "$wrapped"
-        eval $wrapped
-        commandline --replace ''
-        commandline --function repaint
-        return 1  # Cancel the original command
+    if openv check "$cmdline" > /dev/null 2>&1
+        openv execute "$cmdline"
+        history merge
+        history append "$cmdline"
+        history save
+        commandline ''
+    else
+        commandline -f execute
     end
 end
+
+bind \r _openv_hook
+bind \cj _openv_hook
 "#;

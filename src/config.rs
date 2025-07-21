@@ -83,19 +83,6 @@ impl Config {
         }
     }
 
-    pub fn needs_wrapping(&self, command: &str) -> bool {
-        let is_allowed = self.allow.iter().any(|p| p.is_match(command));
-        let is_denied = self.deny.iter().any(|p| p.is_match(command));
-
-        if is_allowed && !is_denied {
-            debug!("Command '{command}' needs wrapping");
-        } else {
-            debug!("Command '{command}' does not need wrapping");
-        }
-
-        is_allowed && !is_denied
-    }
-
     pub fn merge(config1: &Config, config2: &Config) -> Config {
         let allow = if config2.allow.is_empty() {
             config1.allow.clone()

@@ -55,7 +55,7 @@ pub fn setup_hook(shell: Option<&str>) -> Result<(), String> {
     .ok_or_else(|| format!("Unsupported shell: {shell}"))?;
 
     let init_command = match shell.as_str() {
-        "fish" => format!("eval (openv init {shell})"),
+        "fish" => "openv init fish | source".to_string(),
         _ => format!("eval \"$(openv init {shell})\""),
     };
 

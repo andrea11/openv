@@ -1,12 +1,14 @@
 pub const BASH_HOOK: &str = r#"
 _openv_hook() {
-  [[ "$BASH_COMMAND" == *"openv wrap"* ]] && return # Avoid recursion
-  [[ $- != *i* ]] && return  # Only run in interactive shells
+  [[ $- != *i* ]] && return
 
-  cmd="$(openv wrap "$BASH_COMMAND" 2>/dev/null)"
-  eval "$cmd"
-  history -s "$cmd"
-  trap - DEBUG
+  if openv check "$BASH_COMMAND" >/dev/null 2>&1; then
+    openv execute "$BASH_COMMAND"
+
+    history -s "$BASH_COMMAND"
+    trap - DEBUG
+    kill -SIGINT $$
+  fi
 }
 
 trap '_openv_hook' DEBUG
