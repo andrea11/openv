@@ -95,7 +95,8 @@ jobs:
       - name: Update version in Cargo.toml
         if: startsWith(github.ref, 'refs/tags')
         run: |
-          sed -i "s/^version = .*/version = \"${{ needs.extract-version.outputs.version }}\"/" Cargo.toml
+          cargo install cargo-edit
+          cargo set-version ${{ needs.extract-version.outputs.version }}
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
       - name: Package binary as tar.gz
