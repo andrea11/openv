@@ -60,7 +60,6 @@ jobs:
     needs:
       - format
       - lint
-      - test
       - extract-version
     runs-on: ${{ matrix.os }}
     strategy:
