@@ -4,7 +4,6 @@ mod logic;
 
 use clap::{Parser, Subcommand};
 use log::{info, trace};
-use std::process;
 
 #[derive(Parser)]
 #[command(about, author, version)]
@@ -64,17 +63,19 @@ fn main() {
     match &cli.command {
         Commands::Execute { cmd: input } => {
             trace!("Command: execute, Arguments: {input:?}");
-            logic::execute_command(&input.join(" "));
+            match logic::execute_command(&input.join(" ")) {
+                Ok(code) => std::process::exit(code),
+                Err(err) => {
+                    eprintln!("Error: {err}");
+                    std::process::exit(1);
+                }
+            }
         }
         Commands::Check { cmd: input } => {
             trace!("Command: check, Arguments: {input:?}");
-            if logic::needs_wrapping(&input.join(" ")) {
-                println!("true");
-                process::exit(0);
-            } else {
-                println!("false");
-                process::exit(1);
-            }
+            let needs_wrapping = logic::needs_wrapping(&input.join(" "));
+            println!("{needs_wrapping}");
+            std::process::exit(needs_wrapping as i32);
         }
         Commands::Hook { shell } => {
             trace!("Command: hook, Arguments: {shell:?}");
