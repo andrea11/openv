@@ -104,7 +104,7 @@ branches:
           - build
           - test
       # Required. Enforce all configured restrictions for administrators. Set to true to enforce required status checks for repository administrators. Set to null to disable.
-      enforce_admins: false
+      enforce_admins: true
       required_linear_history: true
       required_conversation_resolution: true
       required_signatures: true
