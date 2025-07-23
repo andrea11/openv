@@ -75,7 +75,7 @@ fn main() {
             trace!("Command: check, Arguments: {input:?}");
             let needs_wrapping = logic::needs_wrapping(&input.join(" "));
             println!("{needs_wrapping}");
-            std::process::exit(needs_wrapping as i32);
+            std::process::exit(!needs_wrapping as i32); // Reverse the boolean for the shell to understand
         }
         Commands::Hook { shell } => {
             trace!("Command: hook, Arguments: {shell:?}");
