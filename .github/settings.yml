@@ -100,7 +100,9 @@ branches:
         # Required. Require branches to be up to date before merging.
         strict: true
         # Required. The list of status checks to require in order to merge into this branch
-        contexts: []
+        contexts:
+          - CI (Lint, Build, Release)
+          - CodeQL
       # Required. Enforce all configured restrictions for administrators. Set to true to enforce required status checks for repository administrators. Set to null to disable.
       enforce_admins: true
       required_linear_history: true
