@@ -4,10 +4,6 @@ use shlex::{split, try_quote};
 use std::{env, fs, path::Path, path::PathBuf, process::Command};
 
 pub fn execute_command(original_command: &str) -> Result<i32, String> {
-    if !needs_wrapping(original_command) {
-        return Err("Command does not need wrapping".into());
-    }
-
     let Some(env_file) = find_valid_env_file_path() else {
         return Err("No valid .env file found".into());
     };
@@ -238,11 +234,8 @@ mod tests {
     }
 
     #[test]
-    fn test_execute_when_no_wrap_needed() {
-        assert_eq!(
-            execute_command(""),
-            Err("Command does not need wrapping".into())
-        );
+    fn test_execute_when_no_env_file() {
+        assert_eq!(execute_command(""), Err("No valid .env file found".into()));
     }
 
     // TODO: Fix this test
