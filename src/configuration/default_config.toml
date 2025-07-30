@@ -1,0 +1,32 @@
+allow = [
+  # --- JavaScript / TypeScript
+  "^npm (run )?(start|dev|build)",
+  "^yarn (run )?(start|dev|build)",
+  "^pnpm (run )?(start|dev|build)",
+  "^bun (run )?(start|dev|build)",
+  "^npx .*", # running local npm binaries
+
+  # --- Rust
+  "^cargo (run|build|publish)",
+
+  # --- Python
+  "^poetry (run|build|publish)",
+  "^pipenv run",
+
+  # --- Java
+  "^mvn (compile|deploy).*",
+  "^gradlew? (build|run|publish).*",
+
+  # --- Go
+  "^go (build|run|mod tidy)",
+
+  # --- .NET / C#
+  "^dotnet (build|run|publish)",
+
+  # --- Database / ORMs
+  "prisma (migrate|db pu(ll|sh))",
+]
+
+deny = []
+
+disable_masking = false

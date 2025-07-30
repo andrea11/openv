@@ -1,5 +1,5 @@
-use crate::config::Config;
-use log::{debug, error, warn};
+use crate::configuration::Config;
+use log::{debug, error, info, warn};
 use shlex::{split, try_quote};
 use std::{env, fs, path::Path, path::PathBuf, process::Command};
 
@@ -89,8 +89,22 @@ fn build_safe_command_arguments(original_command: &str) -> Result<Vec<String>, S
 }
 
 fn read_configs(root_project_folder: &Path) -> Config {
-    let global_config = Config::load(&dirs::home_dir().unwrap().join(".openv.toml"));
-    let local_config = Config::load(&root_project_folder.join(".openv.toml"));
+    const CONFIG_FILE: &str = ".openv.toml";
+
+    debug!("Loading global configuration...");
+    let global_config = dirs::home_dir()
+        .and_then(|home| Config::load(&home.join(CONFIG_FILE)))
+        .unwrap_or_else(|| {
+            info!("Global config not found. Using default config.");
+            Config::load_default_config()
+        });
+
+    debug!("Global configuration loaded: {global_config:?}");
+
+    debug!("Loading local configuration...");
+    let local_config = Config::load(&root_project_folder.join(CONFIG_FILE));
+    debug!("Local configuration loaded: {local_config:?}");
+
     Config::merge(&global_config, &local_config)
 }
 
@@ -99,7 +113,7 @@ fn find_valid_env_file_path() -> Option<PathBuf> {
     debug!("Current working directory: {cwd:?}");
 
     let root_project_folder =
-        find_git_root_path(cwd.clone()).or_else(|| find_env_root_path(cwd.clone()))?;
+        find_root_with_marker(&cwd, ".git").or_else(|| find_root_with_marker(&cwd, ".env"))?;
 
     let env_file = root_project_folder.join(".env");
 
@@ -112,32 +126,15 @@ fn find_valid_env_file_path() -> Option<PathBuf> {
     }
 }
 
-fn find_git_root_path(mut dir: PathBuf) -> Option<PathBuf> {
-    loop {
-        if dir.join(".git").exists() {
-            debug!("Git root found: {dir:?}");
-            return Some(dir);
-        }
-
-        if !dir.pop() {
-            warn!("No git root found");
-            return None;
+fn find_root_with_marker(start: &Path, marker: &str) -> Option<PathBuf> {
+    for ancestor in start.ancestors() {
+        if ancestor.join(marker).exists() {
+            debug!("Found {marker} in {ancestor:?}");
+            return Some(ancestor.to_path_buf());
         }
     }
-}
-
-fn find_env_root_path(mut dir: PathBuf) -> Option<PathBuf> {
-    loop {
-        if dir.join(".env").exists() {
-            debug!(".env root found: {dir:?}");
-            return Some(dir);
-        }
-
-        if !dir.pop() {
-            warn!("No .env root found");
-            return None;
-        }
-    }
+    warn!("No {marker} root found starting from {start:?}");
+    None
 }
 
 #[cfg(test)]
