@@ -110,9 +110,9 @@ branches:
       required_signatures: true
       # Required. Restrict who can push to this branch. Team and user restrictions are only available for organization-owned repositories. Set to null to disable.
       restrictions:
-      # apps:  []
-      # users: []
-      # teams: []
+        apps: []
+        users: []
+        teams: []
 actions:
   default_workflow_permissions: "write"
   can_approve_pull_request_reviews": true
