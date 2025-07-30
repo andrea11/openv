@@ -1,7 +1,3 @@
-pub mod bash;
-pub mod fish;
-pub mod zsh;
-
 use crate::hooks::bash::BASH_HOOK;
 use crate::hooks::fish::FISH_HOOK;
 use crate::hooks::zsh::ZSH_HOOK;

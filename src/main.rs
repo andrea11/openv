@@ -1,5 +1,6 @@
-mod config;
+mod configuration;
 mod hooks;
+mod logger;
 mod logic;
 
 use clap::{Parser, Subcommand};
@@ -46,19 +47,7 @@ enum Commands {
 fn main() {
     let cli = Cli::parse();
 
-    let mut log_builder: env_logger::Builder =
-        env_logger::Builder::from_env(env_logger::Env::default());
-
-    if cli.verbose > 0 {
-        let level = match cli.verbose {
-            1 => log::LevelFilter::Info,
-            2 => log::LevelFilter::Debug,
-            _ => log::LevelFilter::Trace,
-        };
-        log_builder.filter_level(level);
-    }
-
-    log_builder.init();
+    logger::init_logger(cli.verbose);
 
     match &cli.command {
         Commands::Execute { cmd: input } => {

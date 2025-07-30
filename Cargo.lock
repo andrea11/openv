@@ -315,6 +315,7 @@ dependencies = [
  "env_logger",
  "log",
  "regex",
+ "serde",
  "shlex",
  "strum_macros",
  "tempfile",
