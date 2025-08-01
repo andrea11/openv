@@ -7,9 +7,9 @@ use std::path::Path;
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     #[serde(default, deserialize_with = "deserialize_vec_regex")]
-    pub allow: Vec<Regex>,
+    pub allow_commands: Vec<Regex>,
     #[serde(default, deserialize_with = "deserialize_vec_regex")]
-    pub deny: Vec<Regex>,
+    pub deny_commands: Vec<Regex>,
     #[serde(default)]
     pub disable_masking: Option<bool>,
 }
@@ -60,13 +60,13 @@ impl Config {
             }
         };
 
-        let allow = pick(&local.allow, &global_config.allow);
-        let deny = pick(&local.deny, &global_config.deny);
+        let allow_commands = pick(&local.allow_commands, &global_config.allow_commands);
+        let deny_commands = pick(&local.deny_commands, &global_config.deny_commands);
         let disable_masking = local.disable_masking.or(global_config.disable_masking);
 
         let cfg = Config {
-            allow,
-            deny,
+            allow_commands,
+            deny_commands,
             disable_masking,
         };
 

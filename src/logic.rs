@@ -52,8 +52,14 @@ pub fn needs_wrapping(original_command: &str) -> bool {
 
     if let Some(env_file) = find_valid_env_file_path() {
         let config = read_configs(env_file.parent().unwrap());
-        let is_allowed = config.allow.iter().any(|p| p.is_match(original_command));
-        let is_denied = config.deny.iter().any(|p| p.is_match(original_command));
+        let is_allowed = config
+            .allow_commands
+            .iter()
+            .any(|p| p.is_match(original_command));
+        let is_denied = config
+            .deny_commands
+            .iter()
+            .any(|p| p.is_match(original_command));
 
         let needs_wrapping = is_allowed && !is_denied;
         debug!(
@@ -157,8 +163,8 @@ mod tests {
         write(
             test_dir.join(".openv.toml"),
             r#"
-                allow = ["npm run dev"]
-                deny = []
+                allow_commands = ["npm run dev"]
+                deny_commands = []
             "#,
         )
         .unwrap();

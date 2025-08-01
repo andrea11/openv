@@ -1,10 +1,9 @@
-allow = [
+allow_commands = [
   # --- JavaScript / TypeScript
   "^npm (run )?(start|dev|build)",
   "^yarn (run )?(start|dev|build)",
   "^pnpm (run )?(start|dev|build)",
   "^bun (run )?(start|dev|build)",
-  "^npx .*", # running local npm binaries
 
   # --- Rust
   "^cargo (run|build|publish)",
@@ -24,9 +23,9 @@ allow = [
   "^dotnet (build|run|publish)",
 
   # --- Database / ORMs
-  "prisma (migrate|db pu(ll|sh))",
+  "prisma (migrate|db|studio)",
 ]
 
-deny = []
+deny_commands = []
 
 disable_masking = false
