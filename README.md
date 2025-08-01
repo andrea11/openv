@@ -97,12 +97,12 @@ Openv uses a TOML configuration file to manage all settings. The configuration f
 
 Example `.openv.toml`:
 ```toml
-allowList = [
+allow_commands = [
     "^(npm|pnpm) (run )?(start|dev|build)",
     "cargo run"
 ]
 
-denyList = [
+denyCommand = [
    "^python"
 ]
 
@@ -111,8 +111,8 @@ disable_masking = false
 
 ### Configuration Options
 
-- **allowList**: A list of Regex patterns for shell commands that are allowed.
-- **denyList**: A list of Regex patterns for shell commands that are denied.
+- **allow_commands**: A list of Regex patterns for shell commands that are allowed.
+- **denyCommand**: A list of Regex patterns for shell commands that are denied.
 - **disable_masking**: A boolean to disable terminal output secrets masking (default is `false`).
 
 ## Supported Shells
