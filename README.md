@@ -102,7 +102,7 @@ allow_commands = [
     "cargo run"
 ]
 
-denyCommand = [
+deny_commands = [
    "^python"
 ]
 
